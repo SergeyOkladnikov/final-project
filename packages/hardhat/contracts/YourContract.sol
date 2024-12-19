@@ -9,6 +9,7 @@ contract YourContract {
         uint weight;
         bool voted;
         address delegate;
+        uint delegatedWeight;
         uint vote;
     }
     struct Proposal {
@@ -37,7 +38,7 @@ contract YourContract {
     }
 
     function setProposals(bytes32[] memory proposalNames) public chairpersonOnly {
-        require(!votingStarted);
+        require(!votingStarted, "Cannot change proposals after voting started!");
         for (uint i = 0; i < proposalNames.length; i++) {
             proposals.push(Proposal({
                 name: proposalNames[i],
@@ -65,11 +66,12 @@ contract YourContract {
     }
 
 
-    function delegate(address to) external ifVotingContinues {
+    function delegate(address to, uint weight) external ifVotingContinues {
         Voter storage sender = voters[msg.sender];
         require(sender.weight != 0, "You have no right to vote");
         require(!sender.voted, "You already voted.");
         require(to != msg.sender, "Self-delegation is disallowed.");
+        require(weight <= sender.weight, "You can't delegate more than you have");
         while (voters[to].delegate != address(0)) {
             to = voters[to].delegate;
             require(to != msg.sender, "Found loop in delegation.");
@@ -83,10 +85,12 @@ contract YourContract {
 
 
         if (delegate_.voted) {
-            proposals[delegate_.vote].voteCount += sender.weight;
+            proposals[delegate_.vote].voteCount += weight;
         } else {
-            delegate_.weight += sender.weight;
+            delegate_.weight += weight;
         }
+        sender.delegatedWeight += weight;
+        sender.weight -= weight;
     }
 
     function revokeDelegation() external ifVotingContinues {
@@ -94,7 +98,9 @@ contract YourContract {
         require(sender.delegate != address(0), "There's no delegation yet.");
         Voter storage delegate_ = voters[sender.delegate];
         require(!delegate_.voted, "Delegate had already voted. You cannot revoke delegation.");
-        delegate_.weight -= sender.weight;
+        delegate_.weight -= sender.delegatedWeight;
+        sender.weight += sender.delegatedWeight;
+        sender.delegatedWeight = 0;
         sender.delegate = address(0);
         sender.voted = false;
     }
@@ -124,7 +130,6 @@ contract YourContract {
 
 
     function winnerName() external view returns (bytes32 winnerName_){
-        require(proposals.length > 0);
         winnerName_ = proposals[winningProposal()].name;
     }
 }
