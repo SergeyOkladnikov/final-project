@@ -1,0 +1,40 @@
+.block {
+    border: 2px solid black;
+    border-radius: 5px 5px;
+    width: 500px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px;
+}
+
+.output {
+    border: 2px solid black;
+    border-radius: 3px 3px;
+}
+
+.input-ui {
+    border: 2px solid black;
+    border-radius: 3px 3px;
+    margin: 3px;
+}
+
+.button-ui {
+    border: 2px solid black;
+    border-radius: 3px 3px;
+    margin: 3px;
+    padding: 2px;
+    color: white;
+    background-color: blueviolet;
+}
+
+.h1-ui {
+    font-size: x-large;
+}
+
+.h2-ui {
+    font-size: larger;
+}

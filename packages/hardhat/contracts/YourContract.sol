@@ -8,6 +8,7 @@ contract YourContract {
     struct Voter {
         uint weight;
         bool voted;
+        bool delegated;
         address delegate;
         uint delegatedWeight;
         uint vote;
@@ -68,6 +69,7 @@ contract YourContract {
 
     function delegate(address to, uint weight) external ifVotingContinues {
         Voter storage sender = voters[msg.sender];
+        require(weight > 0);
         require(sender.weight != 0, "You have no right to vote");
         require(!sender.voted, "You already voted.");
         require(to != msg.sender, "Self-delegation is disallowed.");
@@ -80,7 +82,8 @@ contract YourContract {
 
         Voter storage delegate_ = voters[to];
         require(delegate_.weight >= 1);
-        sender.voted = true;
+        //sender.voted = true;
+        sender.delegated = true;
         sender.delegate = to;
 
 
@@ -97,12 +100,15 @@ contract YourContract {
         Voter storage sender = voters[msg.sender];
         require(sender.delegate != address(0), "There's no delegation yet.");
         Voter storage delegate_ = voters[sender.delegate];
+        require(!delegate_.delegated, "Delegate had already voted. You cannot revoke delegation.");
         require(!delegate_.voted, "Delegate had already voted. You cannot revoke delegation.");
+        require(!sender.voted, "You had already voted. You cannot revoke delegation.");
+        
         delegate_.weight -= sender.delegatedWeight;
         sender.weight += sender.delegatedWeight;
         sender.delegatedWeight = 0;
         sender.delegate = address(0);
-        sender.voted = false;
+        sender.delegated = false;
     }
 
 
