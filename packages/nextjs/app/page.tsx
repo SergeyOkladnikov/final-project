@@ -24,6 +24,28 @@ const Home: NextPage = () => {
   const [vote, setVote] = useState("");
   const [delegate, setDelegate] = useState("");
   const [delegateWeight, setDelegateWeight] = useState("");
+  const [proposalNum, setProposalNum] = useState("");
+
+
+  const {data: winner} = useScaffoldReadContract({
+    contractName: "YourContract",
+    functionName: "winnerName"
+  });
+
+  const {data: proposalCount} = useScaffoldReadContract({
+    contractName: "YourContract",
+    functionName: "proposalCount"
+  });
+
+  const {data: currentProposal} = useScaffoldReadContract({
+    contractName: "YourContract",
+    functionName: "proposals",
+    args: [BigInt(proposalNum)]
+  });
+
+
+
+  
 
 
   const giveRightToVote = async () => {
@@ -44,9 +66,6 @@ const Home: NextPage = () => {
       propsByte.push(element as `0x${string}`)
     });
 
-    console.log(proposals)
-    console.log(proposals.split(", "))
-    console.log(propsByte)
     try {
       await writeContractAsync({
         functionName: "setProposals",
@@ -110,7 +129,6 @@ const Home: NextPage = () => {
   }
 
 
-
   return (
     <>
       <div className='container'>
@@ -169,13 +187,17 @@ const Home: NextPage = () => {
           </div>
         </div>
         <div className="block">
-          <h2>Наблюдение</h2>
+          <h2>Watching</h2>
           <div>
-            <div>Предложения</div>
-            <button
-            
-            className='button-ui'>Show Proposals</button>
-            <div className='output'></div>
+            <div>Количество предложений: {String(proposalCount)}</div>
+            <div>
+              <div>Показать предложение №</div>
+              <input
+              onChange={e => setProposalNum(e.target.value)}
+              className='input-ui' type="text"></input>
+              <div>{currentProposal}</div>
+            </div>
+            <div className='output'>Победитель: {winner}</div>
           </div>
         </div>
       </div>

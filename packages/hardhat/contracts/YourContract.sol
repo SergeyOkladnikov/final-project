@@ -23,6 +23,10 @@ contract YourContract {
     bool votingStarted = false;
     bool votingEnded = false;
 
+    function proposalCount() view public returns(uint) {
+        return proposals.length;
+    }
+
     modifier ifVotingContinues {
         require(votingStarted && !votingEnded, "Voting is not active!");
         _;
